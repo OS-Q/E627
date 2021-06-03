@@ -1,0 +1,7 @@
+{
+    "name": "E627",
+    "description": "Quectel Frameworks for PlatformIO",
+    "url": "https://github.com/OS-Q/E627",
+    "system": "*",
+    "version": "2.1.3"
+}
