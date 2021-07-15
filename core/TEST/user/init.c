@@ -3,8 +3,10 @@
 #include "dma.h"
 #include "usart.h"
 
+lwrb_t usart_tx_dma_ringbuff;
+size_t usart_tx_dma_current_len;
 uint8_t usart_rx_dma_buffer[64];
-
+uint8_t usart_tx_dma_lwrb_data[128];
 /*******************************************************************************
 **函数信息 ：
 **功能描述 ：
@@ -13,6 +15,9 @@ uint8_t usart_rx_dma_buffer[64];
 ********************************************************************************/
 void hal_init(void)
 {
+
+    lwrb_init(&usart_tx_dma_ringbuff, usart_tx_dma_lwrb_data, sizeof(usart_tx_dma_lwrb_data));
+
     LL_USART_InitTypeDef USART_InitStruct = {0};
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
@@ -35,27 +40,39 @@ void hal_init(void)
     GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
     LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-    /* USART2 DMA Init */
-    LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_1, LL_DMAMUX_REQ_USART2_RX);
-    LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_1, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
-    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PRIORITY_LOW);
-    LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MODE_CIRCULAR);
-    LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PERIPH_NOINCREMENT);
-    LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MEMORY_INCREMENT);
-    LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_PDATAALIGN_BYTE);
-    LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_1, LL_DMA_MDATAALIGN_BYTE);
+    /* USART2 RX DMA Init */
+    LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_2, LL_DMAMUX_REQ_USART2_RX);
+    LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_2, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
+    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_2, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_2, LL_DMA_MODE_CIRCULAR);
+    LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_CHANNEL_2, LL_DMA_PERIPH_NOINCREMENT);
+    LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_CHANNEL_2, LL_DMA_MEMORY_INCREMENT);
+    LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_2, LL_DMA_PDATAALIGN_BYTE);
+    LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_2, LL_DMA_MDATAALIGN_BYTE);
+    LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_2, (uint32_t)&USART2->RDR);
+    LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_2, (uint32_t)usart_rx_dma_buffer);
+    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_2, ARRAY_LEN(usart_rx_dma_buffer));
 
-    LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_1, (uint32_t)&USART2->RDR);
-    LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_1, (uint32_t)usart_rx_dma_buffer);
-    LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_1, ARRAY_LEN(usart_rx_dma_buffer));
+    /* USART2 TX DMA Init */
+    LL_DMA_SetPeriphRequest(DMA1, LL_DMA_CHANNEL_3, LL_DMAMUX_REQ_USART2_TX);
+    LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_3, LL_DMA_DIRECTION_MEMORY_TO_PERIPH);
+    LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_3, LL_DMA_PRIORITY_LOW);
+    LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_3, LL_DMA_MODE_NORMAL);
+    LL_DMA_SetPeriphIncMode(DMA1, LL_DMA_CHANNEL_3, LL_DMA_PERIPH_NOINCREMENT);
+    LL_DMA_SetMemoryIncMode(DMA1, LL_DMA_CHANNEL_3, LL_DMA_MEMORY_INCREMENT);
+    LL_DMA_SetPeriphSize(DMA1, LL_DMA_CHANNEL_3, LL_DMA_PDATAALIGN_BYTE);
+    LL_DMA_SetMemorySize(DMA1, LL_DMA_CHANNEL_3, LL_DMA_MDATAALIGN_BYTE);
+    LL_DMA_SetPeriphAddress(DMA1, LL_DMA_CHANNEL_3, (uint32_t)&USART2->TDR);
 
-    /* Enable HT & TC interrupts */
-    LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_1);
-    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_1);
+    /* Enable DMA RX HT & TC interrupts */
+    LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_2);
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_2);
+    /* Enable DMA TX TC interrupts */
+    LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_3);
 
     /* DMA interrupt init */
-    NVIC_SetPriority(DMA1_Channel1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+    NVIC_SetPriority(DMA1_Channel2_3_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
+    NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
 
     /* Configure USART2 */
     USART_InitStruct.PrescalerValue = LL_USART_PRESCALER_DIV1;
@@ -72,14 +89,15 @@ void hal_init(void)
     LL_USART_DisableFIFO(USART2);
     LL_USART_ConfigAsyncMode(USART2);
     LL_USART_EnableDMAReq_RX(USART2);
+    LL_USART_EnableDMAReq_TX(USART2);
     LL_USART_EnableIT_IDLE(USART2);
 
-    /* USART interrupt */
+    /* USART interrupt, same priority as DMA channel */
     NVIC_SetPriority(USART2_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     NVIC_EnableIRQ(USART2_IRQn);
 
-    /* Enable USART and DMA */
-    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_1);
+    /* Enable USART and DMA RX */
+    LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
     LL_USART_Enable(USART2);
 }
 /*******************************************************************************
@@ -90,19 +108,60 @@ void hal_init(void)
 ********************************************************************************/
 void usart_process_data(const void* data, size_t len)
 {
-    const uint8_t* d = data;
-    for (; len > 0; --len, ++d) {
-        LL_USART_TransmitData8(USART2, *d);
-        while (!LL_USART_IsActiveFlag_TXE(USART2)) {}
-    }
-    while (!LL_USART_IsActiveFlag_TC(USART2)) {}
+    lwrb_write(&usart_tx_dma_ringbuff, data, len);
+    /* Start DMA transfer if not already */
+    usart_start_tx_dma_transfer();
 }
 
 void usart_send_string(const char* str)
 {
     usart_process_data(str, strlen(str));
 }
+/*******************************************************************************
+**函数信息 ：
+**功能描述 ：
+**输入参数 ：无
+**输出参数 ：无
+********************************************************************************/
+uint8_t usart_start_tx_dma_transfer(void)
+{
+    uint32_t old_primask;
+    uint8_t started = 0;
 
+    /* Pre-check if transfer active to avoid interrupt disable */
+    if (usart_tx_dma_current_len > 0) {
+        return 0;
+    }
+
+    /* Check if DMA is active */
+    /* Must be set to 0 */
+    old_primask = __get_PRIMASK();
+    __disable_irq();
+
+    /* data to send */
+    if (usart_tx_dma_current_len == 0
+            && (usart_tx_dma_current_len = lwrb_get_linear_block_read_length(&usart_tx_dma_ringbuff)) > 0) {
+        /* Disable channel if enabled */
+        LL_DMA_DisableChannel(DMA1, LL_DMA_CHANNEL_3);
+
+        /* Clear all flags */
+        LL_DMA_ClearFlag_TC3(DMA1);
+        LL_DMA_ClearFlag_HT3(DMA1);
+        LL_DMA_ClearFlag_GI3(DMA1);
+        LL_DMA_ClearFlag_TE3(DMA1);
+
+        /* Start DMA transfer */
+        LL_DMA_SetDataLength(DMA1, LL_DMA_CHANNEL_3, usart_tx_dma_current_len);
+        LL_DMA_SetMemoryAddress(DMA1, LL_DMA_CHANNEL_3, (uint32_t)lwrb_get_linear_block_read_address(&usart_tx_dma_ringbuff));
+
+        /* Start new transfer */
+        LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_3);
+        started = 1;
+    }
+
+    __set_PRIMASK(old_primask);
+    return started;
+}
 
 /*******************************************************************************
 **函数信息 ：
@@ -117,7 +176,7 @@ void usart_rx_check(void)
     size_t pos;
 
     /* Calculate current position in buffer */
-    pos = ARRAY_LEN(usart_rx_dma_buffer) - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_1);
+    pos = ARRAY_LEN(usart_rx_dma_buffer) - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_2);
     if (pos != old_pos) {                       /* Check change in received data */
         if (pos > old_pos) {                    /* Current position is over previous one */
             /* We are in "linear" mode */
@@ -145,15 +204,24 @@ void usart_rx_check(void)
 ********************************************************************************/
 void DMA_Handler(void)
 {
-    if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_HT1(DMA1)) {
-        LL_DMA_ClearFlag_HT1(DMA1);             /* Clear half-transfer complete flag */
+    if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_2) && LL_DMA_IsActiveFlag_HT2(DMA1)) {
+        LL_DMA_ClearFlag_HT2(DMA1);             /* Clear half-transfer complete flag */
         usart_rx_check();                       /* Check for data to process */
     }
 
     /* Check transfer-complete interrupt */
-    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_1) && LL_DMA_IsActiveFlag_TC1(DMA1)) {
-        LL_DMA_ClearFlag_TC1(DMA1);             /* Clear transfer complete flag */
+    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_2) && LL_DMA_IsActiveFlag_TC2(DMA1)) {
+        LL_DMA_ClearFlag_TC2(DMA1);             /* Clear transfer complete flag */
         usart_rx_check();                       /* Check for data to process */
+    }
+
+    /* Events for DMA Channel 3 = USART DMA TX */
+    /* Check transfer complete */
+    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_3) && LL_DMA_IsActiveFlag_TC3(DMA1)) {
+        LL_DMA_ClearFlag_TC3(DMA1);             /* Clear transfer complete flag */
+        lwrb_skip(&usart_tx_dma_ringbuff, usart_tx_dma_current_len);/* Skip sent data, mark as read */
+        usart_tx_dma_current_len = 0;           /* Clear length variable */
+        usart_start_tx_dma_transfer();          /* Start sending more data */
     }
 }
 

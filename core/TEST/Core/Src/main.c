@@ -112,7 +112,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
   hal_init();
   printf("init\n");
-  usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE interrupts\r\n");
+  usart_send_string("USART DMA: DMA HT & TC + USART IDLE LINE interrupts\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
