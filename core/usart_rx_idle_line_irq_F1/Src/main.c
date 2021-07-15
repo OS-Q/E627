@@ -79,35 +79,7 @@ static void LL_Init(void)
     NVIC_SetPriority(PendSV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
     NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 15, 0));
 }
-void System_Config(void)
-{
-    /* Configure flash latency */
-    LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
-    if (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_2) {
-        while (1) {}
-    }
 
-    /* Configure HSE */
-    LL_RCC_HSE_Enable();
-    while (LL_RCC_HSE_IsReady() != 1) {}
-
-    /* Configure PLL */
-    LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_9);
-    LL_RCC_PLL_Enable();
-    while (LL_RCC_PLL_IsReady() != 1) {}
-
-    /* Set system clock */
-    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
-    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
-    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
-    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
-    while (LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL) {}
-
-    /* Configure systick */
-    LL_Init1msTick(72000000);
-    LL_SYSTICK_SetClkSource(LL_SYSTICK_CLKSOURCE_HCLK);
-    LL_SetSystemCoreClock(72000000);
-}
 void usart_init(void)
 {
     LL_USART_InitTypeDef USART_InitStruct;
@@ -254,11 +226,10 @@ int main(void)
   /* USER CODE END Init */
 
   /* Configure the system clock */
-  // SystemClock_Config();
+  SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
     LL_Init();
-    System_Config();
     usart_init();
   /* USER CODE END SysInit */
 
@@ -268,9 +239,7 @@ int main(void)
   // MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   // LL_Init();
-  // usart_init();
   usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE interrupts\r\n");
-  usart_send_string("Start sending data to STM32\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
