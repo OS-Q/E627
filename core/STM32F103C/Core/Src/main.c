@@ -26,7 +26,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "init.h"
-#include "lwrb.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -57,9 +57,7 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-lwrb_t usart_tx_dma_ringbuff;
-size_t usart_tx_dma_current_len;
-uint8_t usart_tx_dma_lwrb_data[128];
+
 /* USER CODE END 0 */
 
 /**
@@ -103,7 +101,6 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  lwrb_init(&usart_tx_dma_ringbuff, usart_tx_dma_lwrb_data, sizeof(usart_tx_dma_lwrb_data));
   hal_init();
   usart_send_string("USE DMA: HT & TC + USART IDLE interrupts\r\n");
   /* USER CODE END 2 */

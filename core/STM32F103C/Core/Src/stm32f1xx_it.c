@@ -205,7 +205,7 @@ void SysTick_Handler(void)
 void DMA1_Channel4_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel4_IRQn 0 */
-
+  DMA4_Handler();
   /* USER CODE END DMA1_Channel4_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Channel4_IRQn 1 */
