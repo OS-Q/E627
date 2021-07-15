@@ -89,23 +89,6 @@ void usart_init(void)
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
     LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
     LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
-
-    /*
-     * USART1 GPIO Configuration
-     *
-     * PA9   ------> USART1_TX
-     * PA10  ------> USART1_RX
-     */
-    GPIO_InitStruct.Pin = LL_GPIO_PIN_9;
-    GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-    GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-    GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-    LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
-    GPIO_InitStruct.Mode = LL_GPIO_MODE_FLOATING;
-    LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
     /* USART1 DMA Init */
 
     /* USART1_RX Init */
@@ -130,13 +113,6 @@ void usart_init(void)
     NVIC_EnableIRQ(DMA1_Channel5_IRQn);
 
     /* USART configuration */
-    USART_InitStruct.BaudRate = 115200;
-    USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-    USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-    USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-    USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
-    USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-    LL_USART_Init(USART1, &USART_InitStruct);
     LL_USART_ConfigAsyncMode(USART1);
     LL_USART_EnableDMAReq_RX(USART1);
     LL_USART_EnableIT_IDLE(USART1);
@@ -229,16 +205,16 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-    LL_Init();
-    usart_init();
+
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
-  // MX_GPIO_Init();
-  // MX_DMA_Init();
-  // MX_USART1_UART_Init();
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  // LL_Init();
+  LL_Init();
+  usart_init();
   usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE interrupts\r\n");
   /* USER CODE END 2 */
 
