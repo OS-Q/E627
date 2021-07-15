@@ -13,18 +13,10 @@ uint8_t usart_rx_dma_buffer[64];
 ********************************************************************************/
 void hal_init(void)
 {
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_AFIO);
-    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOD);
-    NVIC_SetPriorityGrouping(NVIC_PRIORITYGROUP_4);
-    NVIC_SetPriority(MemoryManagement_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_SetPriority(BusFault_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_SetPriority(UsageFault_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_SetPriority(SVCall_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_SetPriority(DebugMonitor_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_SetPriority(PendSV_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_SetPriority(SysTick_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 15, 0));
-    /* USART1_RX Init */
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_USART2);
+    LL_IOP_GRP1_EnableClock(LL_IOP_GRP1_PERIPH_GPIOA);
+    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
+
     LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
     LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_5, LL_DMA_PRIORITY_LOW);
     LL_DMA_SetMode(DMA1, LL_DMA_CHANNEL_5, LL_DMA_MODE_CIRCULAR);
