@@ -26,11 +26,26 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "init.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
+#ifdef __GNUC__
+    #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+    #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
 
+int fputc(int ch, FILE *f)
+{
+    LL_USART_TransmitData8(USART1, (uint8_t)ch);
+    while (!LL_USART_IsActiveFlag_TXE(USART1)) {}
+    return ch;
+}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -100,8 +115,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  hal_init();
-  usart_send_string("USE DMA: HT & TC + USART IDLE interrupts\r\n");
+//  hal_init();
+//  usart_send_string("USE DMA: HT & TC + USART IDLE interrupts\r\n");
+  printf("debug: start\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -111,6 +127,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+    printf("test\r\n");
+//    HAL_Delay(500);
+
   }
   /* USER CODE END 3 */
 }
