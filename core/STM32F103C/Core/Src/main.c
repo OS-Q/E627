@@ -25,7 +25,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "driver.h"
+#include "init.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,7 +101,7 @@ int main(void)
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
   hal_init();
-  usart_send_string("DMA: HT & TC + USART IDLE interrupts\r\n");
+  usart_send_string("USE DMA: HT & TC + USART IDLE interrupts\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */

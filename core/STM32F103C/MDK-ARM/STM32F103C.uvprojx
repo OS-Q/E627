@@ -471,12 +471,12 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>LIBS</GroupName>
+          <GroupName>USER</GroupName>
           <Files>
             <File>
-              <FileName>driver.c</FileName>
+              <FileName>init.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\user\driver.c</FilePath>
+              <FilePath>..\user\init.c</FilePath>
             </File>
           </Files>
         </Group>

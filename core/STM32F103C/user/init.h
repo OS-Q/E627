@@ -1,6 +1,8 @@
-#ifndef _UART_DMA_H_
-#define _UART_DMA_H_
+#ifndef _USER_INIT_H_
+#define _USER_INIT_H_
 #include "main.h"
+#include "dma.h"
+#include "usart.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
