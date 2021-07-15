@@ -28,10 +28,6 @@ void hal_init(void)
     LL_USART_EnableDMAReq_RX(USART1);
     LL_USART_EnableIT_IDLE(USART1);
 
-    /* USART interrupt */
-    NVIC_SetPriority(USART1_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_EnableIRQ(USART1_IRQn);
-
     /* Enable USART and DMA */
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
 }
