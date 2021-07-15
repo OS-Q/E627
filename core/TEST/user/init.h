@@ -15,5 +15,5 @@ void usart_send_string(const char* str);
 void DMA_Handler(void);
 void UART_Handler(void);
 uint8_t usart_start_tx_dma_transfer(void);
-
+void lwrb_test(void);
 #endif

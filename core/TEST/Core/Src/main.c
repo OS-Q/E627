@@ -125,6 +125,7 @@ int main(void)
     LL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
     printf("test\n ");
     for(uint32_t i = 0; i < 6400000; i++);
+    lwrb_test();
   }
   /* USER CODE END 3 */
 }

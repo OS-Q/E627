@@ -2,10 +2,12 @@
 #include "init.h"
 #include "dma.h"
 #include "usart.h"
-
+uint8_t usart_rx_dma_buffer[64];
+lwrb_t usart_rx_dma_ringbuff;
 lwrb_t usart_tx_dma_ringbuff;
 size_t usart_tx_dma_current_len;
-uint8_t usart_rx_dma_buffer[64];
+size_t usart_tx_dma_current_len;
+uint8_t usart_rx_dma_lwrb_data[128];
 uint8_t usart_tx_dma_lwrb_data[128];
 /*******************************************************************************
 **函数信息 ：
@@ -13,10 +15,13 @@ uint8_t usart_tx_dma_lwrb_data[128];
 **输入参数 ：无
 **输出参数 ：无
 ********************************************************************************/
+static uint8_t state, cmd, len;
+
 void hal_init(void)
 {
 
     lwrb_init(&usart_tx_dma_ringbuff, usart_tx_dma_lwrb_data, sizeof(usart_tx_dma_lwrb_data));
+    lwrb_init(&usart_rx_dma_ringbuff, usart_rx_dma_lwrb_data, sizeof(usart_rx_dma_lwrb_data));
 
     LL_USART_InitTypeDef USART_InitStruct = {0};
     LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
@@ -99,6 +104,75 @@ void hal_init(void)
     /* Enable USART and DMA RX */
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_2);
     LL_USART_Enable(USART2);
+    state = 0;
+}
+
+
+void lwrb_test(void)
+{
+
+    uint8_t b;
+
+    /* Process RX ringbuffer */
+
+    /* Packet format: START_BYTE, CMD, LEN[, DATA[0], DATA[len - 1]], STOP BYTE */
+    /* DATA bytes are included only if LEN > 0 */
+    /* An example, send sequence of these bytes: 0x55, 0x01, 0x01, 0xFF, 0xAA */
+
+    /* Read byte by byte */
+
+    if (lwrb_read(&usart_rx_dma_ringbuff, &b, 1) == 1) {
+        switch (state) {
+            case 0: {           /* Wait for start byte */
+                if (b == 0x55) {
+                    ++state;
+                }
+                break;
+            }
+            case 1: {           /* Check packet command */
+                cmd = b;
+                ++state;
+                break;
+            }
+            case 2: {           /* Packet data length */
+                len = b;
+                ++state;
+                if (len == 0) {
+                    ++state;    /* Ignore data part if len = 0 */
+                }
+                break;
+            }
+            case 3: {           /* Data for command */
+                --len;          /* Decrease for received character */
+                if (len == 0) {
+                    ++state;
+                }
+                break;
+            }
+            case 4: {           /* End of packet */
+                if (b == 0xAA) {
+                    /* Packet is valid */
+
+                    /* Send out response with CMD = 0xFF */
+                    b = 0x55;   /* Start byte */
+                    lwrb_write(&usart_tx_dma_ringbuff, &b, 1);
+                    cmd = 0xFF; /* Command = 0xFF = OK response */
+                    lwrb_write(&usart_tx_dma_ringbuff, &cmd, 1);
+                    b = 0x00;   /* Len = 0 */
+                    lwrb_write(&usart_tx_dma_ringbuff, &b, 1);
+                    b = 0xAA;   /* Stop byte */
+                    lwrb_write(&usart_tx_dma_ringbuff, &b, 1);
+
+                    /* Flush everything */
+                    usart_start_tx_dma_transfer();
+                }
+                state = 0;
+                break;
+            }
+        }
+    }
+
+    /* Do other tasks ... */
 }
 /*******************************************************************************
 **函数信息 ：
@@ -108,14 +182,13 @@ void hal_init(void)
 ********************************************************************************/
 void usart_process_data(const void* data, size_t len)
 {
-    lwrb_write(&usart_tx_dma_ringbuff, data, len);
-    /* Start DMA transfer if not already */
-    usart_start_tx_dma_transfer();
+    lwrb_write(&usart_rx_dma_ringbuff, data, len);  /* Write data to receive buffer */
 }
 
 void usart_send_string(const char* str)
 {
-    usart_process_data(str, strlen(str));
+    lwrb_write(&usart_tx_dma_ringbuff, str, strlen(str));   /* Write data to transmit buffer */
+    usart_start_tx_dma_transfer();
 }
 /*******************************************************************************
 **函数信息 ：
@@ -128,7 +201,7 @@ uint8_t usart_start_tx_dma_transfer(void)
     uint32_t old_primask;
     uint8_t started = 0;
 
-    /* Pre-check if transfer active to avoid interrupt disable */
+    /* Check if transfer is on-going */
     if (usart_tx_dma_current_len > 0) {
         return 0;
     }
@@ -138,7 +211,7 @@ uint8_t usart_start_tx_dma_transfer(void)
     old_primask = __get_PRIMASK();
     __disable_irq();
 
-    /* data to send */
+    /* Check if transfer is not active */
     if (usart_tx_dma_current_len == 0
             && (usart_tx_dma_current_len = lwrb_get_linear_block_read_length(&usart_tx_dma_ringbuff)) > 0) {
         /* Disable channel if enabled */
@@ -162,7 +235,6 @@ uint8_t usart_start_tx_dma_transfer(void)
     __set_PRIMASK(old_primask);
     return started;
 }
-
 /*******************************************************************************
 **函数信息 ：
 **功能描述 ：
