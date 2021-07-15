@@ -31,7 +31,7 @@
  * Author:          Tilen MAJERLE <tilen@majerle.eu>
  * Version:         v2.0.0
  */
-#include "lwrb/lwrb.h"
+#include "lwrb.h"
 
 /* Memory set and copy functions */
 #define BUF_MEMSET                      memset
