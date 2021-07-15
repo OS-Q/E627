@@ -382,8 +382,8 @@
   </Group>
 
   <Group>
-    <GroupName>LIBS</GroupName>
-    <tvExp>1</tvExp>
+    <GroupName>USER</GroupName>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -394,8 +394,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Core\Src\driver.c</PathWithFileName>
-      <FilenameWithoutPath>driver.c</FilenameWithoutPath>
+      <PathWithFileName>..\user\init.c</PathWithFileName>
+      <FilenameWithoutPath>init.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

@@ -27,7 +27,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-#include "driver.h"
+#include "init.h"
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
