@@ -115,21 +115,24 @@ void usart_rx_check(void)
 {
     static size_t old_pos;
     size_t pos;
+
     /* Calculate current position in buffer */
     pos = ARRAY_LEN(usart_rx_dma_buffer) - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_1);
     if (pos != old_pos) {                       /* Check change in received data */
         if (pos > old_pos) {                    /* Current position is over previous one */
+            /* We are in "linear" mode */
+            /* Process data directly by subtracting "pointers" */
             usart_process_data(&usart_rx_dma_buffer[old_pos], pos - old_pos);
-        }
-        else {
+        } else {
             /* We are in "overflow" mode */
+            /* First process data to the end of buffer */
             usart_process_data(&usart_rx_dma_buffer[old_pos], ARRAY_LEN(usart_rx_dma_buffer) - old_pos);
             /* Check and continue with beginning of buffer */
             if (pos > 0) {
                 usart_process_data(&usart_rx_dma_buffer[0], pos);
             }
         }
-        old_pos = pos;
+        old_pos = pos;                          /* Save current position as old */
     }
 }
 

@@ -25,27 +25,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "init.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
+#include "init.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-#ifdef __GNUC__
-    #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-    #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
 
-int fputc(int ch, FILE *f)
-{
-    LL_USART_TransmitData8(USART1, (uint8_t)ch);
-    while (!LL_USART_IsActiveFlag_TXE(USART1)) {}
-    return ch;
-}
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -66,7 +55,18 @@ int fputc(int ch, FILE *f)
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 /* USER CODE BEGIN PFP */
+#ifdef __GNUC__
+    #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+#else
+    #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+#endif /* __GNUC__ */
 
+int fputc(int ch, FILE *f)
+{
+    LL_USART_TransmitData8(USART1, (uint8_t)ch);
+    while (!LL_USART_IsActiveFlag_TXE(USART1)) {}
+    return ch;
+}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -93,11 +93,6 @@ int main(void)
 
   /* System interrupt init*/
 
-  /* Peripheral interrupt init*/
-  /* RCC_IRQn interrupt configuration */
-  NVIC_SetPriority(RCC_IRQn, 0);
-  NVIC_EnableIRQ(RCC_IRQn);
-
   /* USER CODE BEGIN Init */
 
   /* USER CODE END Init */
@@ -115,9 +110,9 @@ int main(void)
   MX_USART1_UART_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-//  hal_init();
-//  usart_send_string("USE DMA: HT & TC + USART IDLE interrupts\r\n");
-  printf("debug: start\r\n");
+  hal_init();
+  printf("init\n");
+  usart_send_string("USART DMA example: DMA HT & TC + USART IDLE LINE interrupts\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -127,9 +122,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    printf("test\r\n");
-//    HAL_Delay(500);
-
+    LL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
+    printf("test\n ");
+    for(uint32_t i = 0; i < 6400000; i++);
   }
   /* USER CODE END 3 */
 }
@@ -146,7 +141,6 @@ void SystemClock_Config(void)
   }
 
   /* HSE configuration and activation */
-  LL_RCC_HSE_EnableBypass();
   LL_RCC_HSE_Enable();
   while(LL_RCC_HSE_IsReady() != 1)
   {
