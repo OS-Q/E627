@@ -100,9 +100,8 @@ int main(void)
   MX_DMA_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-  LL_Init();
-  usart_init();
-  usart_send_string("USART DMA: HT & TC + USART IDLE LINE interrupts\r\n");
+  hal_init();
+  usart_send_string("DMA: HT & TC + USART IDLE interrupts\r\n");
   /* USER CODE END 2 */
 
   /* Infinite loop */

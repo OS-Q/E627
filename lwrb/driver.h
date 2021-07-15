@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-void LL_Init(void);
-void usart_init(void);
+#define ARRAY_LEN(x)            (sizeof(x) / sizeof((x)[0]))
+
+void hal_init(void);
 void usart_process_data(const void* data, size_t len);
 void usart_send_string(const char* str);
 void DMA_Handler(void);
