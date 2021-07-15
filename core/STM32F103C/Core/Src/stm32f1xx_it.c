@@ -27,7 +27,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN TD */
-
+#include "driver.h"
 /* USER CODE END TD */
 
 /* Private define ------------------------------------------------------------*/
@@ -219,17 +219,7 @@ void DMA1_Channel4_IRQHandler(void)
 void DMA1_Channel5_IRQHandler(void)
 {
   /* USER CODE BEGIN DMA1_Channel5_IRQn 0 */
-    /* Check half-transfer complete interrupt */
-    if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_5) && LL_DMA_IsActiveFlag_HT5(DMA1)) {
-        LL_DMA_ClearFlag_HT5(DMA1);             /* Clear half-transfer complete flag */
-        usart_rx_check();                       /* Check for data to process */
-    }
-
-    /* Check transfer-complete interrupt */
-    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_5) && LL_DMA_IsActiveFlag_TC5(DMA1)) {
-        LL_DMA_ClearFlag_TC5(DMA1);             /* Clear transfer complete flag */
-        usart_rx_check();                       /* Check for data to process */
-    }
+  DMA_Handler();
   /* USER CODE END DMA1_Channel5_IRQn 0 */
 
   /* USER CODE BEGIN DMA1_Channel5_IRQn 1 */
@@ -243,10 +233,7 @@ void DMA1_Channel5_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-    if (LL_USART_IsEnabledIT_IDLE(USART1) && LL_USART_IsActiveFlag_IDLE(USART1)) {
-        LL_USART_ClearFlag_IDLE(USART1);        /* Clear IDLE line flag */
-        usart_rx_check();                       /* Check for data to process */
-    }
+  UART_Handler();
   /* USER CODE END USART1_IRQn 0 */
   /* USER CODE BEGIN USART1_IRQn 1 */
 

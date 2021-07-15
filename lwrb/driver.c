@@ -1,5 +1,5 @@
 
-#include "dma.h"
+#include "driver.h"
 
 #define ARRAY_LEN(x)            (sizeof(x) / sizeof((x)[0]))
 
@@ -111,4 +111,29 @@ void usart_rx_check(void)
 void usart_send_string(const char* str)
 {
     usart_process_data(str, strlen(str));
+}
+
+/*******************************************************************************
+**函数信息 ：
+**功能描述 ：
+**输入参数 ：无
+**输出参数 ：无
+********************************************************************************/
+void DMA_Handler(void)
+{
+    if (LL_DMA_IsEnabledIT_HT(DMA1, LL_DMA_CHANNEL_5) && LL_DMA_IsActiveFlag_HT5(DMA1)) {
+        LL_DMA_ClearFlag_HT5(DMA1);             /* Clear half-transfer complete flag */
+        usart_rx_check();                       /* Check for data to process */
+    }
+    if (LL_DMA_IsEnabledIT_TC(DMA1, LL_DMA_CHANNEL_5) && LL_DMA_IsActiveFlag_TC5(DMA1)) {
+        LL_DMA_ClearFlag_TC5(DMA1);             /* Clear transfer complete flag */
+        usart_rx_check();                       /* Check for data to process */
+    }
+}
+void UART_Handler(void)
+{
+    if (LL_USART_IsEnabledIT_IDLE(USART1) && LL_USART_IsActiveFlag_IDLE(USART1)) {
+        LL_USART_ClearFlag_IDLE(USART1);        /* Clear IDLE line flag */
+        usart_rx_check();                       /* Check for data to process */
+    }
 }
