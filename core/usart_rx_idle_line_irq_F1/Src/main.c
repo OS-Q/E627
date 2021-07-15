@@ -82,15 +82,6 @@ static void LL_Init(void)
 
 void usart_init(void)
 {
-    LL_USART_InitTypeDef USART_InitStruct;
-    LL_GPIO_InitTypeDef GPIO_InitStruct;
-
-    /* Peripheral clock enable */
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_USART1);
-    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_DMA1);
-    LL_APB2_GRP1_EnableClock(LL_APB2_GRP1_PERIPH_GPIOA);
-    /* USART1 DMA Init */
-
     /* USART1_RX Init */
     LL_DMA_SetDataTransferDirection(DMA1, LL_DMA_CHANNEL_5, LL_DMA_DIRECTION_PERIPH_TO_MEMORY);
     LL_DMA_SetChannelPriorityLevel(DMA1, LL_DMA_CHANNEL_5, LL_DMA_PRIORITY_LOW);
@@ -108,12 +99,6 @@ void usart_init(void)
     LL_DMA_EnableIT_HT(DMA1, LL_DMA_CHANNEL_5);
     LL_DMA_EnableIT_TC(DMA1, LL_DMA_CHANNEL_5);
 
-    /* DMA1_Channel5_IRQn interrupt configuration */
-    NVIC_SetPriority(DMA1_Channel5_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), 0, 0));
-    NVIC_EnableIRQ(DMA1_Channel5_IRQn);
-
-    /* USART configuration */
-    LL_USART_ConfigAsyncMode(USART1);
     LL_USART_EnableDMAReq_RX(USART1);
     LL_USART_EnableIT_IDLE(USART1);
 
@@ -123,8 +108,8 @@ void usart_init(void)
 
     /* Enable USART and DMA */
     LL_DMA_EnableChannel(DMA1, LL_DMA_CHANNEL_5);
-    LL_USART_Enable(USART1);
 }
+
 void usart_rx_check(void)
 {
     static size_t old_pos;
